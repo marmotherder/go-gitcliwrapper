@@ -187,11 +187,11 @@ func (git GitCLIWrapper) GetCommitMessageBody(hash string) (*string, error) {
 	return stdOut, nil
 }
 
-func (git GitCLIWrapper) ForcePushHashToRef(hash, ref, refType string) error {
-	git.logger.Debugf("going to try to push %s to %s on remote %s", hash, ref, git.remote)
-	_, code, err := git.cmd.RunCommand(gitCmd, "push", "-f", git.remote, fmt.Sprintf("%s:refs/%s/%s", hash, refType, ref))
+func (git GitCLIWrapper) ForcePushSourceToTargetRef(sourceRef, targetRef string) error {
+	git.logger.Debugf("going to try to push %s to %s on remote %s", sourceRef, targetRef, git.remote)
+	_, code, err := git.cmd.RunCommand(gitCmd, "push", "-f", git.remote, fmt.Sprintf("%s:%s", sourceRef, targetRef))
 	if err != nil {
-		git.logger.Errorf("failed to force push to git branch %s on remote %s", ref, git.remote)
+		git.logger.Errorf("failed to force push to git ref %s on remote %s", targetRef, git.remote)
 		return err
 	}
 	if code != nil && *code != 0 {
