@@ -8,7 +8,7 @@ import (
 	"github.com/marmotherder/go-cmdwrapper"
 )
 
-type Logger interface {
+type logger interface {
 	Debug(args ...any)
 	Debugf(template string, args ...any)
 	Infof(template string, args ...any)
@@ -17,12 +17,12 @@ type Logger interface {
 	Errorf(template string, args ...any)
 }
 
-func NewGitCLIWrapper(workingDirectory string, logger Logger, remote ...string) *GitCLIWrapper {
+func NewGitCLIWrapper(workingDirectory string, l logger, remote ...string) *GitCLIWrapper {
 	git := &GitCLIWrapper{
 		logger: logger,
 		cmd: cmdwrapper.CMDWrapper{
 			Dir:    workingDirectory,
-			Logger: logger,
+			logger: l,
 		},
 	}
 
@@ -40,7 +40,7 @@ const (
 
 type GitCLIWrapper struct {
 	remote string
-	logger Logger
+	logger logger
 	cmd    cmdwrapper.CMDWrapper
 }
 
