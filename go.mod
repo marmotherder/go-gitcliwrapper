@@ -1,4 +1,4 @@
-module go-gitcliwrapper
+module github.com/marmotherder/go-gitcliwrapper
 
 go 1.19
 
