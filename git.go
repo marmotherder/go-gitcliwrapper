@@ -48,18 +48,22 @@ func nonZeroCode(text string) error {
 	return fmt.Errorf("%s %s %s", gitCmd, text, nonZeroCodeText)
 }
 
-func (git *GitCLIWrapper) GetRemote() error {
+func (git *GitCLIWrapper) GetRemote() (*string, error) {
+	if git.remote != "" {
+		return &git.remote, nil
+	}
+	
 	git.logger.Debug("looking up git remote")
 	remote, code, err := git.cmd.RunCommand(gitCmd, "remote")
 	if err != nil {
 		git.logger.Error("failed to lookup git remote")
-		return err
+		return nil, err
 	}
 	if code != nil && *code != 0 {
-		return nonZeroCode("remote")
+		return nil, nonZeroCode("remote")
 	}
 	if remote == nil {
-		return errors.New("failed to find a git remote")
+		return nil, errors.New("failed to find a git remote")
 	}
 
 	remoteString := strings.TrimSpace(*remote)
@@ -67,14 +71,14 @@ func (git *GitCLIWrapper) GetRemote() error {
 
 	if len(multipleRemotes) <= 1 {
 		git.remote = remoteString
-		return nil
+		return &remoteString, nil
 	}
 
 	remoteString = multipleRemotes[len(multipleRemotes)-1]
 	git.logger.Warnf("multiple remotes were found, using the last one set '%s'", remoteString)
 
 	git.remote = remoteString
-	return nil
+	return &remoteString, nil
 }
 
 func (git GitCLIWrapper) GetLastCommitOnRef(ref string) (*string, error) {
