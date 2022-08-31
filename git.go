@@ -12,6 +12,7 @@ type logger interface {
 	Debug(args ...any)
 	Debugf(template string, args ...any)
 	Infof(template string, args ...any)
+	Warn(args ...any)
 	Warnf(template string, args ...any)
 	Error(args ...any)
 	Errorf(template string, args ...any)
@@ -112,7 +113,7 @@ func (git GitCLIWrapper) ListRemoteRefs(refType string) ([]string, error) {
 	git.logger.Infof("attempting to get a list of remote %s in git from %s", refType, git.remote)
 	remoteRefsResponse, code, err := git.cmd.RunCommand(gitCmd, "ls-remote", "--"+refType, git.remote)
 	if err != nil {
-		git.logger.Error("failed to lookup from remote")
+		git.logger.Warn("failed to lookup from remote")
 		return nil, err
 	}
 	if code != nil && *code != 0 {
@@ -140,7 +141,7 @@ func (git GitCLIWrapper) ListCommits(commitRange ...string) ([]string, error) {
 	commitRange = append(commitRange, git.remote)
 	stdOut, code, err := git.cmd.RunCommand(gitCmd, append([]string{"log", `--pretty=format:"%H"`}, commitRange...)...)
 	if err != nil {
-		git.logger.Error("failed to run git log")
+		git.logger.Warn("failed to run git log")
 		return nil, err
 	}
 	if code != nil && *code != 0 {
@@ -163,7 +164,7 @@ func (git GitCLIWrapper) GetCurrentBranch() (*string, error) {
 	git.logger.Debug("getting the current branch")
 	stdOut, code, err := git.cmd.RunCommand(gitCmd, "rev-parse", "--abbrev-ref", "HEAD")
 	if err != nil {
-		git.logger.Error("failed to get the current git branch")
+		git.logger.Warn("failed to get the current git branch")
 		return nil, err
 	}
 	if code != nil && *code != 0 {
@@ -177,7 +178,7 @@ func (git GitCLIWrapper) GetCommitMessageBody(hash string) (*string, error) {
 	git.logger.Debugf("getting the commit message for %s", hash)
 	stdOut, code, err := git.cmd.RunCommand(gitCmd, "log", "--format=%B", "-n", "1", hash)
 	if err != nil {
-		git.logger.Errorf("failed to get the commit message for %s", hash)
+		git.logger.Warnf("failed to get the commit message for %s", hash)
 		return nil, err
 	}
 	if code != nil && *code != 0 {
@@ -191,7 +192,7 @@ func (git GitCLIWrapper) ForcePushSourceToTargetRef(sourceRef, targetRef string)
 	git.logger.Debugf("going to try to push %s to %s on remote %s", sourceRef, targetRef, git.remote)
 	_, code, err := git.cmd.RunCommand(gitCmd, "push", "-f", git.remote, fmt.Sprintf("%s:%s", sourceRef, targetRef))
 	if err != nil {
-		git.logger.Errorf("failed to force push to git ref %s on remote %s", targetRef, git.remote)
+		git.logger.Warnf("failed to force push to git ref %s on remote %s", targetRef, git.remote)
 		return err
 	}
 	if code != nil && *code != 0 {
