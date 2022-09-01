@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/marmotherder/go-cmdwrapper"
 )
@@ -188,6 +189,29 @@ func (git GitCLIWrapper) GetCommitMessageBody(hash string) (*string, error) {
 	return stdOut, nil
 }
 
+func (git GitCLIWrapper) GetReferenceDateTime(ref string) (*time.Time, error) {
+	git.logger.Debugf("going to try to get the date time for the reference %s", ref)
+	stdOut, code, err := git.cmd.RunCommand(gitCmd, "log", "--format=%cd", "-n", "1", ref)
+	if err != nil {
+		git.logger.Warnf("failed to get the commit date time for %s", ref)
+		return nil, err
+	}
+	if code != nil && *code != 0 {
+		return nil, nonZeroCode("log")
+	}
+	if stdOut == nil {
+		return nil, fmt.Errorf("failed to get a date time for %s", ref)
+	}
+
+	dt, err := time.Parse("Mon Jan 2 15:04:05 2006 -0700", *stdOut)
+	if err != nil {
+		git.logger.Warnf("date time for %s came back in an unexpected format", ref)
+		return nil, err
+	}
+
+	return &dt, nil
+}
+
 func (git GitCLIWrapper) ForcePushSourceToTargetRef(sourceRef, targetRef string) error {
 	git.logger.Debugf("going to try to push %s to %s on remote %s", sourceRef, targetRef, git.remote)
 	_, code, err := git.cmd.RunCommand(gitCmd, "push", "-f", git.remote, fmt.Sprintf("%s:%s", sourceRef, targetRef))
@@ -201,3 +225,4 @@ func (git GitCLIWrapper) ForcePushSourceToTargetRef(sourceRef, targetRef string)
 
 	return nil
 }
+
