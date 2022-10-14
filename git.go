@@ -139,7 +139,6 @@ func (git GitCLIWrapper) ListRemoteRefs(refType string) ([]string, error) {
 
 func (git GitCLIWrapper) ListCommits(commitRange ...string) ([]string, error) {
 	git.logger.Debug("looking up git commits")
-	commitRange = append(commitRange, git.remote)
 	stdOut, code, err := git.cmd.RunCommand(gitCmd, append([]string{"log", `--pretty=format:"%H"`}, commitRange...)...)
 	if err != nil {
 		git.logger.Warn("failed to run git log")
@@ -225,4 +224,3 @@ func (git GitCLIWrapper) ForcePushSourceToTargetRef(sourceRef, targetRef string)
 
 	return nil
 }
-
